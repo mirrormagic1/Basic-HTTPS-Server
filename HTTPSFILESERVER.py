@@ -8,9 +8,9 @@ from socketserver import ThreadingMixIn
 
 # Configuration
 PORT = 443
-DIRECTORY = r'C:\RELEASES'       # Directory to serve
-CERT_FILE = r'E:\certs\basecamp.gay-ssl-bundle\fullchain.pem'  # Full chain: leaf + intermediates
-KEY_FILE = r'E:\certs\basecamp.gay-ssl-bundle\private.key.pem'  # Ensure this file has strict permissions (e.g., chmod 600)
+DIRECTORY = r'X:/'       # Directory to serve
+CERT_FILE = r'fullchain.pem'  # Full chain: certs + public-key
+KEY_FILE = r'private.key.pem'  # Ensure this file has strict permissions (e.g., chmod 600)
 MAX_CONNECTIONS = 100  # Limit simultaneous connections to mitigate DoS risk
 
 # Semaphore to throttle connections
