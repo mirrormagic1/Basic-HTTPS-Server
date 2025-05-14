@@ -1,2 +1,3 @@
-# Basic-Python-HTTPS-Server
-A basic Python HTTPS Server
+# Basic-HTTPS-Server
+A basic HTTPS Server the runs on python. 
+
