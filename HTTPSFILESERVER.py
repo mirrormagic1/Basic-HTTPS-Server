@@ -7,18 +7,40 @@ from http.server import HTTPServer
 from socketserver import ThreadingMixIn
 
 # Configuration
-PORT = 443
-DIRECTORY = r'X:/'       # Directory to serve
-CERT_FILE = r'fullchain.pem'  # Full chain: certs + public-key
-KEY_FILE = r'private.key.pem'  # Ensure this file has strict permissions (e.g., chmod 600)
+PORT = 4443
+DIRECTORY = r'C:\home'    # Directory to serve
+CERT_FILE = r'C:\certs\fullchain.pem'  # Full chain: leaf + intermediates
+KEY_FILE = r'C:\certs\private.key.pem'  # Ensure this file has strict permissions (e.g., chmod 600)
 MAX_CONNECTIONS = 100  # Limit simultaneous connections to mitigate DoS risk
+BLACKLIST_IP_FILE = r'C:/blacklist/blacklist_ips.txt'
+BLACKLIST_DOMAIN_FILE = r'C:/blacklist/blacklist_domains.txt'
 
 # Semaphore to throttle connections
 active_connections = threading.Semaphore(MAX_CONNECTIONS)
 
+# Load blacklists
+def load_blacklist(file_path):
+    try:
+        with open(file_path, 'r') as f:
+            return set(line.strip() for line in f if line.strip() and not line.startswith('#'))
+    except FileNotFoundError:
+        return set()
+
+BLACKLISTED_IPS = load_blacklist(BLACKLIST_IP_FILE)
+BLACKLISTED_DOMAINS = load_blacklist(BLACKLIST_DOMAIN_FILE)
+
 class MyHandler(http.server.SimpleHTTPRequestHandler):
-    """Custom request handler to add CORS headers and serve front page."""
+    """Custom request handler to add CORS headers, serve front page, and enforce blacklists."""
     def do_GET(self):
+        client_ip = self.client_address[0]
+        host = self.headers.get('Host', '')
+
+        if client_ip in BLACKLISTED_IPS or host in BLACKLISTED_DOMAINS:
+            self.send_response(403)
+            self.end_headers()
+            self.wfile.write(b'403 Forbidden: Access is denied.')
+            return
+
         # Serve index.html for root
         if self.path in ('/', '/index.html'):
             self.path = '/index.html'
@@ -57,9 +79,17 @@ class ThreadedSecureHTTPServer(ThreadingMixIn, HTTPServer):
             super().process_request_thread(request, client_address)
 
 class RedirectHandler(http.server.BaseHTTPRequestHandler):
-    """HTTP-to-HTTPS redirect handler."""
+    """HTTP-to-HTTPS redirect handler with blacklist enforcement."""
     def do_GET(self):
-        host = self.headers.get('Host')
+        client_ip = self.client_address[0]
+        host = self.headers.get('Host', '')
+
+        if client_ip in BLACKLISTED_IPS or host in BLACKLISTED_DOMAINS:
+            self.send_response(403)
+            self.end_headers()
+            self.wfile.write(b'403 Forbidden: Access is denied.')
+            return
+
         https_url = f"https://{host}{self.path}"
         self.send_response(301)
         self.send_header('Location', https_url)
@@ -92,7 +122,7 @@ if __name__ == '__main__':
     try:
         https_server.serve_forever()
     except KeyboardInterrupt:
-        print("\nShutting down…")
+        print("Shutting down...")
     finally:
         https_server.server_close()
         redirect_server.server_close()
