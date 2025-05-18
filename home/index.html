@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple HTTPS Server · Parking Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background: #DF4066;
+      color: #FFF;
+      padding: 2rem 1rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 2rem 0;
+      gap: 1rem;
+    }
+    .gallery img {
+      max-width: auto;
+      height: 500px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .directory-listing {
+      margin: 2rem auto;
+      max-width: 400px;
+      text-align: left;
+    }
+    .directory-listing a {
+      display: block;
+      padding: 0.5rem 0;
+      color: #0066cc;
+      text-decoration: none;
+      border-bottom: 1px solid #ddd;
+    }
+    .directory-listing a:hover {
+      background: #eef;
+    }
+    footer {
+      margin: 3rem 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Simple HTTPS Server</h1>
+    <p>This is the default “parking” page.</p>
+  </header>
+
+  <section class="gallery">
+    <!-- perto -->
+    <img src="https://i.pinimg.com/736x/b8/60/32/b860320abcab9ac09341ae72f1e4226e.jpg" alt="Kasane Teto Portrait">
+  </section>
+
+  <section class="directory-listing">
+    <h2>Browse Root Directory</h2>
+    <!-- If Simple HTTPS Server is configured with auto-indexing,
+         this link will show the directory contents. -->
+    <a href="/">View Files &amp; Folders</a>
+  </section>
+
+  <footer>
+    <p>&copy; Simple HTTPS Server • Generated Parking Page</p>
+  </footer>
+</body>
+</html>
