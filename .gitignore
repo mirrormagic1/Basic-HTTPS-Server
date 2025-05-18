@@ -161,3 +161,4 @@ cython_debug/
 /.vs
 /env1
 Basic-Python-HTTPS-Server.pyproj
+*.sln
