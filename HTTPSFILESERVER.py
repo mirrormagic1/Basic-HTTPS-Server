@@ -9,7 +9,7 @@ from http.server import HTTPServer
 from socketserver import ThreadingMixIn
 
 # Load configuration from file
-CONFIG_FILE = './server.cfg'
+CONFIG_FILE = 'server.cfg'
 config = configparser.ConfigParser()
 if not os.path.exists(CONFIG_FILE):
     print(f"Configuration file '{CONFIG_FILE}' not found.")
@@ -169,14 +169,43 @@ if __name__ == '__main__':
     threading.Thread(target=redirect_server.serve_forever, daemon=True).start()
     print("HTTP redirect server running on port 80 → HTTPS")
 
-    # Start HTTPS server on port 443
-    https_server = ThreadedSecureHTTPServer(('0.0.0.0', PORT), MyHandler, context)
-    print(f"Serving HTTPS on port {PORT} with max {MAX_CONNECTIONS} connections")
+    # Setup HTTPS server start function
+    https_server = None
+    https_thread = None
+
+    def start_https_server():
+        global https_server, https_thread
+        if https_server:
+            try:
+                https_server.server_close()
+            except Exception:
+                pass
+        https_server = ThreadedSecureHTTPServer(('0.0.0.0', PORT), MyHandler, context)
+        https_thread = threading.Thread(target=https_server.serve_forever, daemon=True)
+        https_thread.start()
+        print(f"HTTPS server started on port {PORT}")
+
+    # Start HTTPS server initially
+    start_https_server()
+
+    # Watchdog to restart HTTPS server if thread dies
+    def https_watchdog():
+        while True:
+            time.sleep(30)
+            if not https_thread.is_alive():
+                print("Watchdog: HTTPS server thread stopped, restarting...")
+                start_https_server()
+
+    threading.Thread(target=https_watchdog, daemon=True).start()
+
+    # Keep main thread alive
     try:
-        https_server.serve_forever()
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
         print("Shutting down...")
     finally:
-        https_server.server_close()
+        if https_server:
+            https_server.server_close()
         redirect_server.server_close()
         print("Servers closed.")
